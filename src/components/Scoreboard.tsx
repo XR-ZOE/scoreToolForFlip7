@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Crown, Medal, Award } from 'lucide-react';
+
 import type { Player } from "../types";
 import { ScoreChart } from "./ScoreChart";
 
