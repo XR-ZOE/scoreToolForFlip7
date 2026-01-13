@@ -17,18 +17,18 @@ export function PlayerSetup({ onPlayerAdd }: PlayerSetupProps) {
 
   return (
     <div className="card">
-      <h2>歡迎來到 Flip 7 計分工具</h2>
+      <h2>Welcome to Flip 7 Scoring Tool</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="請輸入你的名字 (最多7個字)"
+          placeholder="Enter your name (Max 7)"
           maxLength={7}
           required
           style={{ marginRight: '10px', padding: '8px' }}
         />
-        <button type="submit">開始計分</button>
+        <button type="submit">Start Scoring</button>
       </form>
     </div>
   );

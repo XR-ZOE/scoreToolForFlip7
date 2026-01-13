@@ -17,16 +17,16 @@ export function GameLobby({ onCreateGame, onJoinGame }: GameLobbyProps) {
 
   return (
     <div className="card">
-      <button onClick={onCreateGame} style={{ marginBottom: '20px' }}>建立新遊戲</button>
+      <button onClick={onCreateGame} style={{ marginBottom: '20px' }}>Create New Game</button>
       <hr />
       <form onSubmit={handleJoinSubmit} style={{ marginTop: '20px' }}>
         <input
           type="text"
           value={joinId}
           onChange={(e) => setJoinId(e.target.value)}
-          placeholder="輸入遊戲 ID 加入"
+          placeholder="Enter Game ID"
         />
-        <button type="submit">加入遊戲</button>
+        <button type="submit">Join Game</button>
       </form>
     </div>
   );

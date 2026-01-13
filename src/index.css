@@ -1,105 +1,133 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  font-family: 'Inter', system-ui, sans-serif;
 
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #1a1a1a;
+  /* Flip 7 Box Art Inspired Palette */
+  --bg-main: #66C5BA;
+  /* Iconic Teal/Cyan Background */
+  --bg-card: #FFFBE6;
+  /* Creamy Card Background */
+  --text-main: #2C3E50;
+  /* Dark Navy for readability */
+  --text-scordboard: #000000;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --accent-gold: #F4D03F;
+  /* Bright Yellow/Gold from Title */
+  --accent-red: #E74C3C;
+  /* Retro Red for accents */
+  --accent-blue: #2980B9;
+  /* Strong Blue */
 
-  --primary-color: #4caf50; /* Green table felt color */
-  --secondary-color: #646cff; /* Vite blue or neon */
-  --card-bg: #242424;
-  --text-main: #ffffff;
-  --text-muted: #a1a1a1;
+  --primary-btn: #E67E22;
+  /* Orange/Red button */
+  --primary-btn-hover: #D35400;
+
+  /* No longer forcing dark scheme, using light/colorful */
+  color-scheme: light;
 }
 
 body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  /* Subtle pattern or gradient to make it less flat */
+  background-image:
+    linear-gradient(135deg, #66C5BA 0%, #52B3A8 100%);
+  min-height: 100vh;
   margin: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
   justify-content: center;
-  background-color: #121212;
 }
 
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
   width: 100%;
-  max-width: 600px; /* Mobile first focus */
+  max-width: 600px;
+  padding: 1rem;
 }
 
 h1 {
-  font-size: 2.5em;
-  line-height: 1.1;
-  background: linear-gradient(to right, #4caf50, #8bc34a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 0.5rem;
+  font-family: 'Arial Black', sans-serif;
+  /* Thicker font */
+  font-weight: 900;
+  font-size: 2.5rem;
+  letter-spacing: 2px;
+
+  /* Retro 3D Text Effect */
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  text-shadow:
+    2px 2px 0px #000,
+    4px 4px 0px var(--accent-red);
+
+  margin-bottom: 2rem;
+  border-bottom: 4px solid var(--text-main);
+  padding-bottom: 1rem;
+}
+
+h2,
+h3 {
+  color: var(--text-main);
+  border-left: 6px solid var(--accent-red);
+  padding-left: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .card {
-  padding: 2em;
-  background-color: var(--card-bg);
-  border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  border: 1px solid #333;
-  margin-bottom: 1rem;
+  background: var(--bg-card);
+  border: 3px solid #000;
+  /* Comic/Retro outlines */
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1.5rem;
+  color: var(--text-scordboard);
 }
 
 button {
+  background: var(--primary-btn);
+  color: #FFF;
+  font-family: 'Arial Black', sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 2px solid #000;
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  padding: 12px 24px;
+  box-shadow: 4px 4px 0px #000;
   cursor: pointer;
-  transition: border-color 0.25s;
-  background-color: var(--primary-color);
-  color: white;
+  transition: all 0.1s;
 }
+
 button:hover {
-  border-color: #8bc34a;
-  background-color: #45a049;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000;
+  filter: brightness(1.1);
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+
+button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #000;
 }
 
 input {
-  background-color: #333;
-  border: 1px solid #444;
+  background: #FFF;
+  border: 2px solid #000;
+  color: #000;
+  font-weight: bold;
+  font-size: 1.1em;
+  padding: 10px;
   border-radius: 8px;
-  padding: 0.6em;
-  color: white;
-  font-size: 1em;
-  outline: none;
-}
-input:focus {
-  border-color: var(--primary-color);
 }
 
 table {
   width: 100%;
 }
 
-th, td {
+th,
+td {
   padding: 10px;
-  border-bottom: 1px solid #333;
+  border-bottom: 2px solid #ddd;
 }
 
-tr:last-child td {
-  border-bottom: none;
+p {
+  font-weight: 500;
 }

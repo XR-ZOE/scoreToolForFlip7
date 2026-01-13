@@ -20,16 +20,16 @@ export function AddScoreForm({ round, playerName, onScoreAdd }: AddScoreFormProp
 
   return (
     <form onSubmit={handleSubmit} className="card">
-      <h3>{playerName}, 請輸入 Round {round} 的分數</h3>
+      <h3>{playerName}, Enter Score for Round {round}</h3>
       <input
         type="number"
         value={score}
         onChange={(e) => setScore(e.target.value)}
-        placeholder="輸入分數"
+        placeholder="Enter Score"
         required
         style={{ marginRight: '10px', padding: '8px' }}
       />
-      <button type="submit">新增分數</button>
+      <button type="submit">Add Score</button>
     </form>
   );
 }

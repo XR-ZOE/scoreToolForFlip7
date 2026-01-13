@@ -23,6 +23,7 @@ io.on('connection', (socket) => {
 
   socket.on('create_game', (callback) => {
     const gameId = Math.random().toString(36).substring(2, 8).toUpperCase();
+
     games.set(gameId, {
       players: [],
       status: 'lobby',
@@ -30,7 +31,7 @@ io.on('connection', (socket) => {
     });
     socket.join(gameId);
     callback({ success: true, gameId });
-    console.log(`Game created: ${gameId}`);
+    console.log(`Game created with dummy data: ${gameId}`);
   });
 
   socket.on('join_game', ({ gameId, playerName }, callback) => {

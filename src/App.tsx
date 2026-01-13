@@ -6,6 +6,8 @@ import { PlayerSetup } from './components/PlayerSetup';
 import { Scoreboard } from './components/Scoreboard';
 import { AddScoreForm } from './components/AddScoreForm';
 import { GameLobby } from './components/GameLobby';
+import { AlertModal } from './components/AlertModal';
+import { ConfirmModal } from './components/ConfirmModal';
 import { socket } from './socket';
 
 function App() {
@@ -13,6 +15,8 @@ function App() {
   const [game, setGame] = useState<Game | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(socket.connected);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showNotFoundAlert, setShowNotFoundAlert] = useState(false);
 
   useEffect(() => {
     function onConnect() {
@@ -49,8 +53,14 @@ function App() {
       socket.emit('join_game', { gameId, playerName }, (response: { success: boolean, error?: string }) => {
         if (!response.success && response.error) {
           console.error("Rejoin failed:", response.error);
-          // Optional: Clear store if game not found?
-          // setError(response.error);
+
+          if (response.error === 'Game not found') {
+            // Server restart or game deleted
+            // alert('找不到此遊戲 (可能伺服器已重啟)，將回到大廳。');
+            setGameId('');
+            setPlayerName('');
+            setShowNotFoundAlert(true);
+          }
         }
       });
     }
@@ -61,22 +71,6 @@ function App() {
     socket.emit('create_game', (response: { success: boolean, gameId: string }) => {
       if (response.success) {
         setGameId(response.gameId);
-        // Creator is automatically joined to room by server, so they will receive updates if they stay connected.
-        // But checking `game` might still be null until first update arrives? 
-        // Server emits update immediately inside create_game? No, create_game just joins.
-        // We might want server to emit update or just set local empty state.
-        // Let's rely on server sending update or we can just wait.
-        // Actually my server code for create_game: calls callback, logic joins socket. 
-        // It DOES NOT emit game_update.
-        // Fix: I should trust the ID. The first game_update will come when a player joins?
-        // Wait, if I am creator, I want to see the empty scoreboard.
-        // I should probably ask server to send me the game object.
-        // OR: create_game returns gameId. I can just render locally.
-        // BUT server `games` Map has the object.
-        // Let's update server or handle it here?
-        // Easier: Creator enters name -> joins game -> gets update.
-        // So Creator flow: Create -> ID set -> Player Setup -> Join -> Update.
-        // This works fine.
       }
     });
   }, [setGameId]);
@@ -95,10 +89,11 @@ function App() {
         setPlayerName(name);
         setError(null);
       } else {
-        setError(response.error || "加入遊戲失敗");
+        setError(response.error || "Failed to join game");
         // If game not found, maybe reset gameId?
         if (response.error === 'Game not found') {
           setGameId(''); // Go back to lobby
+          setShowNotFoundAlert(true);
         }
       }
     });
@@ -119,20 +114,45 @@ function App() {
   // Show PlayerSetup if:
   // 1. We have a gameId (so not in Lobby)
   // 2. We don't have a playerName set LOCALLY OR We are not in the game players list (remote source of truth)
-  // But strictly, if we have local playerName but not in game list (e.g. game restarted), we should probably re-join?
+  // But strictly, if we have local playerName but not in game (e.g. game restarted), we should probably re-join?
   // Using simple logic: if !playerName, show setup. 
   // If playerName is set, but not in game... wait for join_game effect to work?
   // Let's sticking to: !playerName ? Setup : Scoreboard.
   const showPlayerSetup = !playerName;
 
+  const handleScoreEdit = useCallback((round: number, newScore: number) => {
+    if (!gameId || !playerName) return;
+    socket.emit('update_score', { gameId, playerName, score: newScore, round });
+  }, [gameId, playerName]);
+
+
   return (
     <>
-      <h1>Flip 7 計分小工具</h1>
+      <h1>Flip 7 Scoring Tool</h1>
       <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '1rem' }}>
         Status: {isConnected ? <span style={{ color: 'lightgreen' }}>Connected</span> : <span style={{ color: 'red' }}>Disconnected</span>}
       </div>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <ConfirmModal
+        isOpen={showExitConfirm}
+        title="Leave Room?"
+        message="Leaving will clear your local session. The game continues on the server. Are you sure?"
+        onConfirm={() => {
+          setGameId('');
+          setPlayerName('');
+          setShowExitConfirm(false);
+        }}
+        onCancel={() => setShowExitConfirm(false)}
+      />
+
+      <AlertModal
+        isOpen={showNotFoundAlert}
+        title="Game Not Found"
+        message="The game may have ended or the server restarted. Returning to lobby."
+        onConfirm={() => setShowNotFoundAlert(false)}
+      />
 
       {!gameId ? (
         <GameLobby onCreateGame={handleCreateGame} onJoinGame={handleJoinGame} />
@@ -140,13 +160,27 @@ function App() {
         <PlayerSetup onPlayerAdd={handlePlayerAdd} />
       ) : game ? (
         <>
-          <p>遊戲ID: <strong>{gameId}</strong> (分享給朋友加入)</p>
-          <Scoreboard players={game.players} currentPlayerName={playerName} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <p style={{ margin: 0 }}>Game ID: <strong>{gameId}</strong></p>
+            <button
+              onClick={() => setShowExitConfirm(true)}
+              style={{
+                fontSize: '0.8em',
+                padding: '4px 8px',
+                background: '#333',
+                border: '1px solid #555',
+                color: '#aaa'
+              }}
+            >
+              Leave Room
+            </button>
+          </div>
           {/* Only show add score form if "game is playing" (in future) or just always for now */}
           <AddScoreForm round={currentRound} playerName={playerName} onScoreAdd={handleScoreAdd} />
+          <Scoreboard players={game.players} currentPlayerName={playerName} onScoreEdit={handleScoreEdit} />
         </>
       ) : (
-        <p>載入遊戲資料中... (ID: {gameId})</p>
+        <p>Loading game data... (ID: {gameId})</p>
       )}
     </>
   );
