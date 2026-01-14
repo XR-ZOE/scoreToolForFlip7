@@ -1,5 +1,7 @@
 # Flip 7 Scoring Tool
 
+Here to start a new game: https://scoretoolforflip7.onrender.com
+
 A real-time, digital scoring companion for the **Flip 7** card game. This web application replaces traditional paper scoring, allowing players to join a shared game room, input scores round-by-round, and track the winner with beautiful, automated visualizations.
 
 ![Flip 7 Theme](https://via.placeholder.com/800x400?text=Flip+7+Scoring+Tool)

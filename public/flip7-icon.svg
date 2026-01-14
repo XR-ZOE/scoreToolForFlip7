@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Outer Blue Outline -->
+  <polygon points="15,15 85,15 85,35 55,90 35,90 60,35 15,35"
+           fill="#1E3A8A" stroke="#1E3A8A" stroke-width="16" stroke-linejoin="round"/>
+  <!-- Inner Red Stroke + Yellow Body -->
+  <polygon points="15,15 85,15 85,35 55,90 35,90 60,35 15,35"
+           fill="#FCD34D" stroke="#EF4444" stroke-width="6" stroke-linejoin="round"/>
+</svg>
