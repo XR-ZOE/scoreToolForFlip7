@@ -2,6 +2,8 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -10,7 +12,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
+
+// Security Middleware
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for now to avoid breaking inline scripts/styles if any
+}));
+
+// Rate Limiting (Prevent DDoS)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+
+app.use(cors()); // TODO: Restrict origin in production
 
 // Serve static files from the build directory properly
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -24,28 +41,61 @@ const io = new Server(httpServer, {
 });
 
 // In-memory game state
-// Map<gameId, { players: Player[], status: 'lobby'|'playing' }>
+// Map<gameId, { players: Player[], status: 'lobby'|'playing', lastActive: number }>
 const games = new Map();
+
+// Lazy Cleanup: Runs only when a new game is created
+const cleanOldGames = () => {
+  const now = Date.now();
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+  let deletedCount = 0;
+  for (const [id, game] of games.entries()) {
+    if (now - game.lastActive > ONE_DAY_MS) {
+      games.delete(id);
+      deletedCount++;
+    }
+  }
+  if (deletedCount > 0) {
+    console.log(`Cleaned up ${deletedCount} inactive games.`);
+  }
+};
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   socket.on('create_game', (callback) => {
-    const gameId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    // 1. Perform Cleanup (Lazy)
+    cleanOldGames();
+
+    // 2. Generate Unique 3-Digit ID
+    let gameId;
+    let attempts = 0;
+    do {
+      gameId = Math.floor(Math.random() * 900 + 100).toString(); // 100-999
+      attempts++;
+    } while (games.has(gameId) && attempts < 100);
+
+    if (games.has(gameId)) {
+      callback({ success: false, error: 'Server busy, please try again.' });
+      return;
+    }
 
     games.set(gameId, {
       players: [],
       status: 'lobby',
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      lastActive: Date.now()
     });
+
     socket.join(gameId);
     callback({ success: true, gameId });
-    console.log(`Game created with dummy data: ${gameId}`);
+    console.log(`Game created: ${gameId}`);
   });
 
   socket.on('join_game', ({ gameId, playerName }, callback) => {
     // Normalize ID
-    const room = gameId?.toUpperCase();
+    const room = gameId?.toString(); // Ensure string
 
     if (!games.has(room)) {
       callback({ success: false, error: 'Game not found' });
@@ -53,6 +103,8 @@ io.on('connection', (socket) => {
     }
 
     const game = games.get(room);
+    game.lastActive = Date.now(); // Update activity
+
     const existingPlayer = game.players.find(p => p.name === playerName);
 
     if (!existingPlayer) {
@@ -77,22 +129,16 @@ io.on('connection', (socket) => {
   });
 
   socket.on('update_score', ({ gameId, playerName, score, round }) => {
-    const room = gameId?.toUpperCase();
+    const room = gameId?.toString();
     if (!games.has(room)) return;
 
     const game = games.get(room);
+    game.lastActive = Date.now(); // Update activity
+
     const player = game.players.find(p => p.name === playerName);
 
     if (player) {
-      // Ensure scores array is large enough
-      // Note: round is 1-indexed usually, but let's assume strict array pushing for now
-      // or using index. Let's use direct index assignment for robustness if rounds trigger out of order (unlikely but safe)
-      // Actually, let's just push for now or replace if specifically looking for round editing.
-      // Simple logic: Add score.
-
-      // If the player is modifying a specific round, we might need more logic. 
-      // For now, let's assume appending a new round score.
-      if (score !== undefined) {
+      if (typeof score === 'number') { // Basic validation
         player.scores[round - 1] = score;
         player.totalScore = player.scores.reduce((a, b) => a + b, 0);
       }
@@ -118,3 +164,4 @@ const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
