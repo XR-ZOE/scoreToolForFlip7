@@ -9,6 +9,7 @@ import { GameLobby } from './components/GameLobby';
 import { AlertModal } from './components/AlertModal';
 import { ConfirmModal } from './components/ConfirmModal';
 import { socket } from './socket';
+import { logEvent } from './utils/analytics';
 
 function App() {
   const { gameId, playerName, setGameId, setPlayerName } = useGameStore();
@@ -71,6 +72,7 @@ function App() {
     socket.emit('create_game', (response: { success: boolean, gameId: string }) => {
       if (response.success) {
         setGameId(response.gameId);
+        logEvent('create_game', { gameId: response.gameId });
       }
     });
   }, [setGameId]);
@@ -88,6 +90,7 @@ function App() {
       if (response.success) {
         setPlayerName(name);
         setError(null);
+        logEvent('join_game', { gameId, playerName: name });
       } else {
         setError(response.error || "Failed to join game");
         // If game not found, maybe reset gameId?
@@ -106,6 +109,7 @@ function App() {
     const round = (currentPlayer?.scores.length ?? 0) + 1;
 
     socket.emit('update_score', { gameId, playerName, score, round });
+    logEvent('update_score', { gameId, score, round });
   }, [gameId, playerName, game]);
 
   const currentPlayer = game?.players.find(p => p.name === playerName);

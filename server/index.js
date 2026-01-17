@@ -40,6 +40,15 @@ const io = new Server(httpServer, {
   }
 });
 
+// Structured Logging Helper
+const logEvent = (type, data) => {
+  console.log(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    event: type,
+    ...data
+  }));
+};
+
 // In-memory game state
 // Map<gameId, { players: Player[], status: 'lobby'|'playing', lastActive: number }>
 const games = new Map();
@@ -47,22 +56,24 @@ const games = new Map();
 // Lazy Cleanup: Runs only when a new game is created
 const cleanOldGames = () => {
   const now = Date.now();
-  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 
   let deletedCount = 0;
   for (const [id, game] of games.entries()) {
-    if (now - game.lastActive > ONE_DAY_MS) {
+    if (now - game.lastActive > SIX_HOURS_MS) {
       games.delete(id);
       deletedCount++;
     }
   }
   if (deletedCount > 0) {
-    console.log(`Cleaned up ${deletedCount} inactive games.`);
+    logEvent('CLEANUP', { count: deletedCount, message: 'Inactive games removed' });
   }
 };
 
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  // Try to get IP address (works for proxy setups too if config is right, otherwise falls back)
+  const clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+  logEvent('CONNECTION', { socketId: socket.id, ip: clientIp });
 
   socket.on('create_game', (callback) => {
     // 1. Perform Cleanup (Lazy)
@@ -90,7 +101,7 @@ io.on('connection', (socket) => {
 
     socket.join(gameId);
     callback({ success: true, gameId });
-    console.log(`Game created: ${gameId}`);
+    logEvent('GAME_CREATED', { gameId, socketId: socket.id });
   });
 
   socket.on('join_game', ({ gameId, playerName }, callback) => {
@@ -125,7 +136,7 @@ io.on('connection', (socket) => {
     io.to(room).emit('game_update', game);
 
     callback({ success: true });
-    console.log(`Player ${playerName} joined ${room}`);
+    logEvent('PLAYER_JOIN', { gameId: room, playerName, socketId: socket.id });
   });
 
   socket.on('update_score', ({ gameId, playerName, score, round }) => {
@@ -147,11 +158,19 @@ io.on('connection', (socket) => {
       game.players.sort((a, b) => b.totalScore - a.totalScore);
 
       io.to(room).emit('game_update', game);
+
+      logEvent('SCORE_UPDATE', {
+        gameId: room,
+        playerName,
+        round,
+        score,
+        totalScore: player.totalScore
+      });
     }
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    logEvent('DISCONNECT', { socketId: socket.id });
   });
 });
 
@@ -162,6 +181,5 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logEvent('SYSTEM', { message: 'Server started', port: PORT });
 });
-
