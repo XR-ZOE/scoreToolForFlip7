@@ -17,8 +17,26 @@ export function GameLobby({ onCreateGame, onJoinGame }: GameLobbyProps) {
 
   return (
     <div className="card">
-      <button onClick={onCreateGame} style={{ marginBottom: '20px' }}>Create New Game</button>
-      <hr />
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+        <button onClick={onCreateGame}>Create New Game</button>
+      </div>
+
+      <div style={{ position: 'relative', textAlign: 'center', margin: '20px 0' }}>
+        <hr style={{ border: 'none', borderTop: '2px solid #ddd', margin: '0' }} />
+        <span style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'var(--bg-card)', // Match card background
+          padding: '0 10px',
+          color: '#888',
+          fontWeight: 'bold',
+          fontSize: '0.9rem'
+        }}>
+          OR
+        </span>
+      </div>
       <form onSubmit={handleJoinSubmit} style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
         <input
           type="text"
