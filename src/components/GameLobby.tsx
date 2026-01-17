@@ -19,12 +19,13 @@ export function GameLobby({ onCreateGame, onJoinGame }: GameLobbyProps) {
     <div className="card">
       <button onClick={onCreateGame} style={{ marginBottom: '20px' }}>Create New Game</button>
       <hr />
-      <form onSubmit={handleJoinSubmit} style={{ marginTop: '20px' }}>
+      <form onSubmit={handleJoinSubmit} style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
         <input
           type="text"
           value={joinId}
           onChange={(e) => setJoinId(e.target.value)}
           placeholder="Enter Game ID"
+          style={{ width: '120px' }}
         />
         <button type="submit">Join Game</button>
       </form>

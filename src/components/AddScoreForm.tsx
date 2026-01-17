@@ -20,16 +20,18 @@ export function AddScoreForm({ round, playerName, onScoreAdd }: AddScoreFormProp
 
   return (
     <form onSubmit={handleSubmit} className="card">
-      <h3>{playerName}, Enter Score for Round {round}</h3>
-      <input
-        type="number"
-        value={score}
-        onChange={(e) => setScore(e.target.value)}
-        placeholder="Enter Score"
-        required
-        style={{ marginRight: '10px', padding: '8px' }}
-      />
-      <button type="submit">Add Score</button>
+      <h3>{playerName}, Round {round}</h3>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
+        <input
+          type="number"
+          value={score}
+          onChange={(e) => setScore(e.target.value)}
+          placeholder="Enter Score"
+          required
+          style={{ width: '110px', padding: '8px' }}
+        />
+        <button type="submit">Add Score</button>
+      </div>
     </form>
   );
 }

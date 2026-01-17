@@ -18,15 +18,15 @@ export function PlayerSetup({ onPlayerAdd }: PlayerSetupProps) {
   return (
     <div className="card">
       <h2>Welcome to Flip 7 Scoring Tool</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Enter your name (Max 7)"
+          placeholder="Name (Max 7)"
           maxLength={7}
           required
-          style={{ marginRight: '10px', padding: '8px' }}
+          style={{ width: '140px' }}
         />
         <button type="submit">Start Scoring</button>
       </form>

@@ -41,6 +41,15 @@ body {
   width: 100%;
   max-width: 600px;
   padding: 1rem;
+  box-sizing: border-box;
+  /* Ensure padding doesn't overflow width */
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 0.5rem;
+    /* Smaller margins on mobile */
+  }
 }
 
 h1 {
